@@ -1,0 +1,105 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lucky Draw • Event Studio</title><script>try{const t=localStorage.getItem('eventdraw_ui_theme');if(t==='light')document.documentElement.dataset.theme='light'}catch{}</script><link rel="stylesheet" href="css/style.css?v=1.8.0"></head><body>
+<div id="toast" role="status" aria-live="polite"></div>
+<section id="auth" class="auth-wrap"><form id="authForm" class="panel auth-panel"><div class="brand">✦ EVENT<span>DRAW</span></div><h1 id="authTitle">เข้าสู่ระบบ</h1><p class="muted">จัดการ Lucky Draw สำหรับงาน Event</p><label>อีเมล<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label><label>รหัสผ่าน
+  <span class="password-input-wrap">
+    <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="6" required>
+    <button class="password-visibility" id="togglePasswordVisibility" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false" aria-controls="authPassword" hidden></button>
+  </span>
+</label>
+<label id="confirmPasswordField" hidden>ยืนยันรหัสผ่าน
+  <span class="password-input-wrap">
+    <input id="authConfirmPassword" name="confirm_password" type="password" autocomplete="new-password" minlength="6" disabled>
+    <button class="password-visibility" id="toggleConfirmVisibility" type="button" aria-label="แสดงรหัสผ่านที่ยืนยัน" aria-pressed="false" aria-controls="authConfirmPassword"></button>
+  </span>
+</label><button class="primary" type="submit" id="authSubmit">เข้าสู่ระบบ</button><button class="link" type="button" id="toggleAuth">ยังไม่มีบัญชี? สมัครสมาชิก</button><p class="hint"></p></form></section>
+<div id="app" hidden><aside class="sidebar"><div class="brand">✦ EVENT<span>DRAW</span></div><div class="side-note">EVENT MANAGEMENT</div><nav id="nav"><button class="nav active" data-page="dashboard">▦ &nbsp; Dashboard</button><button class="nav" data-page="import">⇧ &nbsp; Import Excel / CSV</button><button class="nav" data-page="fields">☷ &nbsp; Custom Fields</button><button class="nav" data-page="winners">🏆 &nbsp; ผู้ได้รับรางวัล</button><button class="nav" data-page="history">◷ &nbsp; History / Logs</button></nav><div class="sidebar-bottom"><button class="secondary" id="openLive">↗ เปิดหน้า Live</button><div class="sidebar-account-actions"><button class="reset-sidebar" id="resetBtn" type="button" title="ล้างข้อมูลงานทั้งหมด (ต้องยืนยัน)">↺ Reset</button><button class="link" id="logout" type="button">ออกจากระบบ</button></div></div></aside><main class="content"><header><div><div class="eyebrow">LUCKY DRAW / EVENT CONTROL</div><h1 id="pageTitle">Dashboard</h1></div><div class="account-tools"><button id="themeToggle" class="theme-toggle" type="button" aria-label="เปลี่ยนเป็นโหมดสว่าง" title="เปลี่ยนเป็นโหมดสว่าง"><span aria-hidden="true">🌙</span></button><div class="operator" id="account"></div></div></header>
+<section id="dashboard" class="page"><div class="stats"><article class="panel stat"><small>ผู้มีสิทธิ์ทั้งหมด</small><strong id="statAll">0</strong><span>รายชื่อในระบบ</span></article><article class="panel stat"><small>ได้รับรางวัลแล้ว</small><strong id="statWon" class="green">0</strong><span>ผู้ได้รับรางวัล (ไม่ซ้ำ)</span></article><article class="panel stat"><small>ประเภทรางวัลที่ยังเหลือ</small><strong id="statPrizes">0</strong><span id="statUnits">0 รางวัลที่ยังแจกได้</span></article></div>
+<div class="grid2"><section class="panel draw-panel"><div class="section-head"><div><h2>✦ ควบคุมการสุ่มรางวัล</h2><p>เลือกของรางวัล แล้วกดยืนยันก่อนสุ่มจริง</p></div><span class="pill">CONTROL</span></div><label>ของรางวัลที่จะสุ่ม<select id="drawPrize"></select></label>
+<div class="live-config-panel">
+ <div><strong>การแสดงผลบน Live Screen</strong><p class="muted">แก้ไขข้อความด้วยตัวแปร ดูตัวอย่างก่อนบันทึก และอัปโหลดภาพพื้นหลังของงานได้เอง</p><p id="liveBackgroundSummary" class="live-config-summary">พื้นหลัง: เวทีม่านแดง (ค่าเริ่มต้น)</p></div>
+ <button id="openLiveSettings" class="secondary" type="button">✎ แก้ไข Live Screen</button>
+ <p id="liveSaveStatus" class="live-save-status" aria-live="polite">กำลังโหลดการตั้งค่า...</p>
+</div><label class="inline-check"><input type="checkbox" id="allowRepeat"> อนุญาตให้ผู้ที่เคยได้รางวัลแล้วมีสิทธิ์ได้รับอีก</label><div class="actions"><button class="primary" id="drawBtn">🎲 สุ่มผู้โชคดี</button><button class="secondary" id="liveBtn">↗ Live Screen</button></div><div id="latest" class="winner-box">ยังไม่มีผลการสุ่ม</div></section>
+<section class="panel prize-panel"><div class="section-head"><div><h2>🎁 จัดการของรางวัล</h2><p>เพิ่ม แก้ไข และตรวจสอบจำนวนของรางวัลสำหรับการสุ่ม</p></div><button id="openPrizeDialog" class="primary" type="button">+ เพิ่มของรางวัล</button></div><div id="prizeList" class="prize-list"></div></section></div>
+<section class="panel"><div class="section-head"><div><h2>รายชื่อผู้เข้าร่วม</h2><p>ข้อมูลจากแบบฟอร์มและการนำเข้า Excel / CSV</p></div><div class="people-actions"><input id="searchPeople" aria-label="ค้นหารายชื่อ" placeholder="⌕ ค้นหาทุก Field..." class="search"><button id="openPeopleColumns" class="secondary" type="button">☷ จัดการคอลัมน์</button><button id="addPersonBtn" class="primary">+ เพิ่มรายชื่อ</button></div></div><div class="table-wrap"><table><thead id="peopleHead"></thead><tbody id="peopleBody"></tbody></table></div></section></section>
+<section id="import" class="page" hidden><div class="page-intro">อัปโหลดไฟล์ Excel (.xlsx / .xls) หรือ .csv → จับคู่คอลัมน์เอง → ตรวจสอบ → นำเข้า</div><section class="panel"><h2>นำเข้ารายชื่อผู้ร่วมงาน</h2><label>เลือกไฟล์<input id="fileInput" type="file" accept=".xlsx,.xls,.csv"></label><div id="mappingArea" hidden><div class="section-head"><div><h3 id="fileSummary">จับคู่คอลัมน์</h3><p>ต้องจับคู่เพียงชื่อและนามสกุลเท่านั้น ส่วน Field อื่นเป็นข้อมูลเสริม</p></div></div><div class="table-wrap"><table><thead><tr><th>คอลัมน์ในไฟล์</th><th>ตัวอย่าง</th><th>จับคู่กับ Field</th></tr></thead><tbody id="mappingBody"></tbody></table></div><div class="stats import-stats"><article class="panel stat"><strong id="totalRows">0</strong><span>ทั้งหมด</span></article><article class="panel stat"><strong id="validRows" class="green">0</strong><span>พร้อมนำเข้า</span></article><article class="panel stat"><strong id="badRows" class="red">0</strong><span>ข้อมูลไม่ครบ / ผิด</span></article></div><div id="importProblems" class="hint"></div><label class="inline-check"><input type="checkbox" id="importAll"> นำเข้าทุกแถวแม้ข้อมูลไม่ครบ (ไม่แนะนำ)</label><div class="actions"><button id="importBtn" class="primary">นำเข้ารายชื่อ</button><button id="clearFile" class="secondary">เลือกไฟล์ใหม่</button></div></div></section></section>
+<section id="fields" class="page" hidden><p class="page-intro">Field พื้นฐาน: รหัสประจำตัว / ชื่อ / นามสกุล / แผนก (รหัสใส่ตัวอักษรและตัวเลขได้) และเพิ่ม Custom Field ได้</p><section class="panel"><h2>ฟิลด์ที่กำหนดเอง</h2><div class="table-wrap"><table><thead><tr><th>Label</th><th>Key</th><th>Type</th><th>Required</th><th>ฟอร์ม</th><th>ตาราง</th><th>Live</th><th>Export</th><th>จัดการ</th></tr></thead><tbody id="fieldsBody"></tbody></table></div></section><section class="panel"><h2>+ เพิ่ม / แก้ไข Field</h2><form id="fieldForm"><div class="two"><label>Label *<input name="label" required placeholder="เช่น ประเภทบัตร"></label><label>Key *<input name="field_key" pattern="[a-z][a-z0-9_]*" required placeholder="ticket_type"></label></div><label>Type<select name="field_type"><option value="text">text</option><option value="number">number</option><option value="select">select</option><option value="radio">radio</option></select></label><label>ตัวเลือก (สำหรับ select / radio คั่นด้วยจุลภาค)<input name="options" placeholder="Regular, VIP, Speaker"></label><div class="check-grid"><label><input type="checkbox" name="required"> Required</label><label><input type="checkbox" name="show_form" checked> แสดงบนฟอร์ม</label><label><input type="checkbox" name="show_table"> แสดงบนตาราง</label><label><input type="checkbox" name="show_live"> แสดงตอนเช็คอิน/Live</label><label><input type="checkbox" name="exportable" checked> Export ได้</label></div><button class="primary" id="saveField">เพิ่ม Field</button><button class="secondary" type="button" id="cancelField" hidden>ยกเลิกการแก้ไข</button></form></section></section>
+<section id="winners" class="page" hidden>
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <h2>🏆 ผู้ได้รับรางวัล</h2>
+        <p>แสดงรายชื่อผู้ที่ได้รับรางวัลแล้ว โดยรวมรางวัลของแต่ละคนไว้ในแถวเดียว</p>
+      </div>
+      <div class="people-actions">
+        <label class="sr-only" for="searchWinners">ค้นหาผู้ได้รับรางวัล</label>
+        <input id="searchWinners" class="search" type="search" placeholder="⌕ ค้นหาชื่อ / รหัส / รางวัล..." aria-label="ค้นหาผู้ได้รับรางวัล">
+        <button id="exportWinnersBtn" type="button" class="primary">⬇ Export CSV</button>
+      </div>
+    </div>
+    <p class="winners-note" id="winnersSummary" aria-live="polite">ยังไม่มีผู้ได้รับรางวัล</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>รหัสประจำตัว</th><th>ชื่อ</th><th>นามสกุล</th><th>แผนก</th>
+          <th>ของรางวัลที่ได้รับ</th><th>จำนวนรางวัล</th><th>ได้รับล่าสุด</th>
+        </tr></thead>
+        <tbody id="winnersBody"><tr><td colspan="7">กำลังโหลดรายชื่อ...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+<section id="history" class="page" hidden><section class="panel"><div class="section-head"><div><h2>ประวัติและ Activity Logs</h2><p>บันทึกการจับรางวัล การเพิ่ม/แก้ไขรางวัล และการนำเข้า</p></div><select id="logFilter" aria-label="ประเภทประวัติ"><option value="all">ทั้งหมด</option><option value="draw">เฉพาะผู้ได้รับรางวัล</option><option value="prize">เฉพาะการแก้ไขรางวัล</option><option value="import">เฉพาะการนำเข้า</option><option value="field">เฉพาะการแก้ไข Field</option></select></div><div class="table-wrap"><table><thead><tr><th>เวลา</th><th>ประเภท</th><th>รายละเอียด</th><th>ผู้ดำเนินการ</th></tr></thead><tbody id="logsBody"></tbody></table></div></section></section>
+
+</main></div>
+
+<dialog id="prizeDialog" class="prize-dialog">
+ <form id="prizeForm" class="prize-dialog-form">
+  <div class="live-settings-head"><div><h2 id="prizeDialogTitle">+ เพิ่มของรางวัล</h2><p id="prizeDialogSubtitle">กรอกชื่อของรางวัลและจำนวนที่ต้องการใช้ในการสุ่ม</p></div><button id="closePrizeDialog" type="button" class="dialog-close" aria-label="ปิด">×</button></div>
+  <input id="prizeEditId" name="prize_id" type="hidden">
+  <div class="prize-dialog-fields">
+   <label>ชื่อของรางวัล *<input id="prizeName" name="name" required maxlength="160" autocomplete="off" placeholder="เช่น Wave 125"></label>
+   <label>จำนวน *<input id="prizeQuantity" name="quantity" type="number" min="1" step="1" value="1" required inputmode="numeric"></label>
+  </div>
+  <p id="prizeQuantityHelp" class="prize-dialog-help">กำหนดจำนวนรางวัลทั้งหมดที่สามารถแจกได้</p>
+  <div class="actions prize-dialog-actions"><button id="cancelPrizeDialog" type="button" class="secondary">ยกเลิก</button><button id="savePrize" type="submit" class="primary">เพิ่มของรางวัล</button></div>
+ </form>
+</dialog>
+<dialog id="peopleColumnsDialog" class="people-config-dialog">
+ <form id="peopleColumnsForm" class="people-config-form">
+  <div class="live-settings-head"><div><h2>☷ จัดการคอลัมน์รายชื่อ</h2><p>เลือก Field ที่ต้องการแสดง และลากเพื่อจัดลำดับคอลัมน์จากซ้ายไปขวา</p></div><button id="closePeopleColumns" type="button" class="dialog-close" aria-label="ปิด">×</button></div>
+  <div class="people-config-toolbar"><button id="selectAllPeopleColumns" type="button" class="secondary">เลือกทั้งหมด</button><button id="resetPeopleColumns" type="button" class="secondary">คืนค่าเริ่มต้น</button></div>
+  <div id="peopleColumnsList" class="column-order-list" aria-label="รายการคอลัมน์"></div>
+  <p class="hint">ลากที่สัญลักษณ์ ⋮⋮ หรือใช้ปุ่ม ↑ ↓ เพื่อเปลี่ยนลำดับ คอลัมน์ที่อยู่บนสุดจะแสดงซ้ายสุด</p>
+  <div class="actions people-config-actions"><button id="cancelPeopleColumns" type="button" class="secondary">ยกเลิก</button><button type="submit" class="primary">บันทึกคอลัมน์</button></div>
+ </form>
+</dialog>
+<dialog id="personDialog"><form id="personForm" class="confirm"><h2>+ เพิ่มรายชื่อผู้เข้าร่วม</h2><div id="personFormFields"></div><div class="actions"><button type="button" class="secondary" id="cancelPerson">ยกเลิก</button><button class="primary" type="submit" id="savePerson">บันทึกรายชื่อ</button></div></form></dialog>
+<dialog id="resetDialog"><form id="resetForm" class="confirm"><h2>ยืนยันการเริ่มต้นใหม่</h2><p>ลบรายชื่อทั้งหมด ของรางวัล ผลสุ่ม ประวัติ Custom Fields และการตั้งค่า Live Screen ของบัญชีนี้อย่างถาวร โดยไม่ลบบัญชี Login</p><label>พิมพ์ RESET เพื่อยืนยัน<input id="resetPhrase" autocomplete="off" required placeholder="RESET"></label><div class="actions"><button id="cancelReset" type="button" class="secondary">ยกเลิก</button><button class="danger" type="submit">ล้างข้อมูลทั้งหมด</button></div></form></dialog>
+<dialog id="confirmDialog"><form method="dialog" class="confirm"><h2>ยืนยันการสุ่มรางวัล?</h2><p id="confirmText"></p><div class="actions"><button value="cancel" class="secondary">ยกเลิก</button><button id="confirmDraw" value="confirm" class="primary">ยืนยัน สุ่มเลย</button></div></form></dialog>
+<dialog id="liveSettingsDialog" class="live-settings-dialog">
+ <form id="liveSettingsForm" class="live-settings-form">
+  <div class="live-settings-head"><div><h2>✦ แก้ไข Live Screen</h2><p>กำหนดข้อความและพื้นหลังที่ใช้บนหน้าจอประกาศผล</p></div><button id="closeLiveSettings" type="button" class="dialog-close" aria-label="ปิด">×</button></div>
+  <section class="live-editor-section"><h3>ข้อความบน Live Screen</h3><p class="muted">กดตัวแปรด้านล่างเพื่อแทรกลงในช่องที่กำลังแก้ไข ตัวแปรจะถูกแทนด้วยข้อมูลจริงเมื่อสุ่มรางวัล</p><div id="liveVariableChips" class="variable-chips"></div>
+   <div class="live-template-grid">
+    <label>ข้อความส่วนหัว<input id="liveCaptionTemplate" name="live_caption_template" maxlength="160" placeholder="LUCKY DRAW"></label>
+    <label>ข้อความชื่อรางวัล<input id="livePrizeTemplate" name="live_prize_template" maxlength="200" placeholder="รางวัล {prize}"></label>
+    <label>ข้อความผู้โชคดี<input id="liveWinnerTemplate" name="live_winner_template" maxlength="240" placeholder="{full_name}"></label>
+    <label>ข้อความแสดงความยินดี<textarea id="liveStatusTemplate" name="live_status_template" rows="3" maxlength="320" placeholder="🎉 ขอแสดงความยินดี {full_name} ที่ได้รับ {prize}"></textarea></label>
+   </div>
+  </section>
+  <section class="live-editor-section"><h3>รูปพื้นหลัง</h3><p class="muted">หากไม่แนบรูป ระบบจะใช้ฉากเวทีม่านแดงเป็นค่าเริ่มต้น รองรับ JPG, PNG และ WebP ขนาดไม่เกิน 8 MB</p><div class="background-controls"><label class="file-button">เลือกรูปพื้นหลัง<input id="liveBackgroundFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><span id="liveBackgroundFileName" class="muted">ยังไม่ได้เลือกไฟล์ใหม่</span><button id="removeLiveBackground" type="button" class="secondary">ใช้พื้นหลังค่าเริ่มต้น</button></div></section>
+  <section class="live-editor-section"><div class="section-head"><div><h3>สีบน Live Screen</h3><p class="muted">ปรับสีแต่ละองค์ประกอบได้อิสระ และดูผลได้ทันทีในตัวอย่างด้านล่าง</p></div><button id="resetLiveColors" type="button" class="secondary">คืนค่าสีเริ่มต้น</button></div><div class="live-color-grid">
+    <label>คำว่า LUCKY DRAW<input id="liveAccentColor" name="live_accent_color" type="color"></label>
+    <label>ป้าย LIVE<input id="liveBadgeColor" name="live_badge_color" type="color"></label>
+    <label>ชื่อรางวัล<input id="livePrizeColor" name="live_prize_color" type="color"></label>
+    <label>ขอบกรอบชื่อ<input id="liveFrameColor" name="live_frame_color" type="color"></label>
+    <label>ชื่อผู้โชคดี<input id="liveWinnerColor" name="live_winner_color" type="color"></label>
+    <label>ข้อความด้านล่าง<input id="liveStatusColor" name="live_status_color" type="color"></label>
+    <label>พื้นหลังกรอบชื่อ<input id="liveFrameBackground" name="live_frame_background" type="color"></label>
+   </div></section>
+  <section class="live-editor-section"><div class="section-head"><div><h3>ตัวอย่างก่อนบันทึก</h3><p class="muted">ตัวอย่างใช้รายชื่อและรางวัลตัวอย่างเท่านั้น</p></div></div><div id="livePreview" class="live-preview"><div class="preview-live-badge">● LIVE</div><div id="previewCaption" class="preview-caption"></div><div id="previewPrize" class="preview-prize"></div><div id="previewWinner" class="preview-winner"></div><div id="previewStatus" class="preview-status"></div></div></section>
+  <div class="actions live-settings-actions"><button id="cancelLiveSettings" type="button" class="secondary">ยกเลิก</button><button id="saveLiveSettings" type="submit" class="primary">บันทึกการตั้งค่า</button></div>
+ </form>
+</dialog>
+<script type="module" src="js/app.js?v=1.8.0"></script></body></html>
